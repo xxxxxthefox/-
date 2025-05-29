@@ -7,6 +7,7 @@ getgenv().settings = {
 
 local fov = 30
 local predictionFactor = 0.1
+local enemyDetectedColor = Color3.fromRGB(255, 0, 0)
 local aimbotEnabled = false
 
 local Players = game:GetService("Players")
@@ -31,6 +32,7 @@ frame.Draggable = true
 local toggleButton = Instance.new("TextButton", frame)
 toggleButton.Size = UDim2.new(1, 0, 1, 0)
 toggleButton.BackgroundColor3 = Color3.fromRGB(128, 128, 128)
+toggleButton.BackgroundTransparency = 0.2
 toggleButton.Text = "الأيمبوت معطّل"
 
 -- دائرة FOV
@@ -42,15 +44,18 @@ FOVring.Filled = false
 FOVring.Radius = fov
 FOVring.Position = camera.ViewportSize / 2
 
--- زر تبديل يدوي
-toggleButton.MouseButton1Click:Connect(function()
-    aimbotEnabled = not aimbotEnabled
-    toggleButton.Text = aimbotEnabled and "الأيمبوت مفعّل" or "الأيمبوت معطّل"
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        FOVring.Visible = true
+        FOVring.Position = camera.ViewportSize / 2
+    else
+        FOVring.Visible = false
+    end
 end)
 
--- أدوات الفحص
+-- كشف الأعداء
 local function isEnemy(player)
-    return player.Team ~= nil and localPlayer.Team ~= nil and player.Team ~= localPlayer.Team
+    return player.Team == nil or localPlayer.Team == nil or player.Team ~= localPlayer.Team
 end
 
 local function isAlive(player)
@@ -101,23 +106,14 @@ local function predictMovement(hitbox)
     return hitbox.Position + (hitbox.Velocity * predictionFactor)
 end
 
--- التحديث المستمر كل إطار
+-- زر التبديل
+toggleButton.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    toggleButton.Text = aimbotEnabled and "الأيمبوت مفعّل" or "الأيمبوت معطّل"
+end)
+
+-- التصويب التلقائي
 RunService.RenderStepped:Connect(function()
-    -- تحديث موضع دائرة FOV
-    FOVring.Position = camera.ViewportSize / 2
-
-    -- تحديث حالة الأيمبوت بناء على وجود الفريق
-    if localPlayer.Team == nil then
-        aimbotEnabled = false
-        toggleButton.Text = "لا يوجد فريق (مغلق)"
-        FOVring.Visible = false
-        return
-    end
-
-    -- إظهار دائرة FOV إذا كان الأيمبوت مفعل
-    FOVring.Visible = aimbotEnabled
-
-    -- تشغيل الأيمبوت
     if aimbotEnabled then
         local targetHitbox = getClosestVisibleEnemy()
         if targetHitbox then
@@ -131,7 +127,7 @@ end)
 
 -- تنبيه
 game.StarterGui:SetCore("SendNotification", {
-    Title = "Aimbot v3.7",
+    Title = "vip v3.7",
     Text = "xxxxxthefox",
     Icon = "rbxassetid://115469660765124",
     Duration = 20
