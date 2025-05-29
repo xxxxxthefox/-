@@ -5,7 +5,7 @@ getgenv().settings = {
     precision = 0.00001
 }
 
-local fov = 30
+local fov = 60
 local predictionFactor = 0.1
 local enemyDetectedColor = Color3.fromRGB(255, 0, 0)
 local aimbotEnabled = false
